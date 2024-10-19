@@ -16,3 +16,8 @@ class ReplayMemory(object):
         self.device=torch.devicee("cuda:0" if torch.cuda.is_available() else "cpu")
         self.capacity=capacity
         self.memory=[]
+
+    def push(self, event):
+        self.memory.append(event)
+        if len(self.memory)>self.capacity:
+            del self.memory[0]
