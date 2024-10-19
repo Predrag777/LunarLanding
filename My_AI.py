@@ -32,4 +32,15 @@ class Agent():
             if len(self.memory.memory):
                 experiences=self.memory.sample(100)
                 self.learn(experiences, 0.99)   #gamma=0.99
+    
+    def act(self, state, epsilon=0.):
+        state=torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+        self.local_qnetwork.eval()
 
+        with torch.no_grad():   #State of inference not of training. Model makes predictions over data whcih did not be seen before
+            action_values=self.local_qnetwork(state)
+        self.local_qnetwork.train()
+        if random.random()>epsilon:
+            return np.argmax(action_values.cpu().data.numpy())
+        else:
+            return random.choice(np.arange(self.action_size))
