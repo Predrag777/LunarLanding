@@ -25,3 +25,11 @@ class Agent():
         self.memory=ReplayMemory(replay_buffer_size)
         self.t_step=0
 
+    def step(self, state, action, reward, next_state, done):
+        self.memory.push((state, action, reward, next_state, done))
+        self.t_step=(self.t_step+1)%4
+        if self.t_step==0:  #if t_step is divisible with 4
+            if len(self.memory.memory):
+                experiences=self.memory.sample(100)
+                self.learn(experiences, 0.99)   #gamma=0.99
+
