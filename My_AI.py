@@ -44,3 +44,18 @@ class Agent():
             return np.argmax(action_values.cpu().data.numpy())
         else:
             return random.choice(np.arange(self.action_size))
+
+    def learn(self, experiences, gamma):
+        states, next_states, actions, rewards,dones=experiences
+        next_q_targets=self.target_qnetwork(next_states).detache().max(1)[0].unsqueeze(1)
+        q_targets=rewards+(gamma*next_q_targets*(1-dones))
+        q_expected=self.local_qnetwork(states).gather(1,actions)
+        loss=F.mse_loss(q_expected, q_targets)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        self.soft_update(self.local_qnetwork, self.target_qnetwork, interpolation_parameter)
+
+    def soft_update(self, local_model, target_model, interpolation_parameter):
+        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
+            target_param.data.copy_(interpolation_parameter*local_param.data+(1.0-interpolation_parameter)*target_param.data)
